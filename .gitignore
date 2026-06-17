@@ -1,0 +1,10 @@
+# macOS
+.DS_Store
+
+# Editor
+.idea/
+.vscode/
+*.swp
+
+# Node（本仓库为纯内容仓库，一般无依赖；保留以备扩展）
+node_modules/
