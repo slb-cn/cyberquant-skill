@@ -14,3 +14,8 @@
 - **第 2 步意图路由**：
   - 分析数据 → MCP `list_routes → get_route_detail → query_data`（CSV，pageSize 上限 1000，不自动翻页）。
   - 导出数据 → CLI `cyberquant-cli stream ... --output`（固定 stream 方式），含 MCP params → CLI flags 参数翻译规则。
+
+### 变更
+
+- **导出去除分页参数**：stream（SSE）为长连接流式拉取，CLI flags 不再传 `--pageSize`/`--page` 等分页参数（数据自动流式拉取至结束）。
+- **导出改为后台异步执行**：`cyberquant-cli stream` 改用 Bash `run_in_background: true` 在独立线程执行——启动后**立即回复用户「数据导出中」**（提示关注输出文件内容变化），**后台任务完成后再回复「导出完成」**（给出文件路径与行数），不再阻塞对话、不再同步等待。
