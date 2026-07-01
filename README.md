@@ -1,6 +1,6 @@
 # cyberquant-skill
 
-> 一个 [Claude Code](https://docs.claude.com/en/docs/claude-code) 技能（Skill），作为 **「赛博空间2077」CyberQuant 数据共享 API 服务平台的统一助手**的统一入口：自动安装并配置 [cyberquant-mcp](https://www.npmjs.com/package/cyberquant-mcp) 与 [cyberquant-cli](https://www.npmjs.com/package/cyberquant-cli)，之后根据你的自然语言意图自动路由——**查询/分析数据走 MCP，导出数据到文件走 CLI（stream 方式）**。
+> 一个 AI 助手技能（Skill），作为 **「赛博空间2077」CyberQuant 数据共享 API 服务平台的统一助手**：自动安装并配置 [cyberquant-mcp](https://www.npmjs.com/package/cyberquant-mcp) 与 [cyberquant-cli](https://www.npmjs.com/package/cyberquant-cli)，之后根据你的自然语言意图自动路由——**查询/分析数据走 MCP，导出数据到文件走 CLI（stream 方式）**。
 
 ## 它能做什么
 
