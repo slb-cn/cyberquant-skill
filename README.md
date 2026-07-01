@@ -1,6 +1,6 @@
 # cyberquant-skill
 
-> 一个 [Claude Code](https://docs.claude.com/en/docs/claude-code) 技能（Skill），作为 **CyberQuant 数据共享API服务平台**的统一入口：自动安装并配置 [cyberquant-mcp](https://www.npmjs.com/package/cyberquant-mcp) 与 [cyberquant-cli](https://www.npmjs.com/package/cyberquant-cli)，之后根据你的自然语言意图自动路由——**查询/分析数据走 MCP，导出数据到文件走 CLI（stream 方式）**。
+> 一个 [Claude Code](https://docs.claude.com/en/docs/claude-code) 技能（Skill），作为 **「赛博空间2077」CyberQuant 数据共享 API 服务平台的统一助手**的统一入口：自动安装并配置 [cyberquant-mcp](https://www.npmjs.com/package/cyberquant-mcp) 与 [cyberquant-cli](https://www.npmjs.com/package/cyberquant-cli)，之后根据你的自然语言意图自动路由——**查询/分析数据走 MCP，导出数据到文件走 CLI（stream 方式）**。
 
 ## 它能做什么
 
@@ -18,9 +18,28 @@
 - 可访问 npm 公网（首次会从 npm 拉取 cyberquant-mcp / cyberquant-cli）
 - 一个CyberQuant**API Key**（格式 `sk_live_xxx`；登录 [https://quant.cyberspace2077.com/](https://quant.cyberspace2077.com/) 获取，无账号可联系微信号 **lghxt520** 申请。首次使用时技能也会向你索取并代为写入）
 
-## 安装（一行命令）
+## 安装
 
-把本仓库 clone 到 Claude Code 的 skills 目录即可。仓库根目录就是技能目录，clone 完直接可用：
+支持两种方式：**让 AI 助手直接装**（推荐，最省事）或 **手动 clone**。
+
+### 方式一：让 AI 助手直接安装（推荐）
+
+在 Codex、Claude Code 等支持技能/自定义指令的 AI 助手对话里，直接把下面这句话发给它，它会自动完成下载、放置到正确目录并配置：
+
+```
+请帮我安装这个 [cyberquant-skill] skill，它的链接是：https://github.com/slb-cn/cyberquant-skill
+```
+
+- **Codex**：在 Codex 对话框中粘贴上面这句话即可，Codex 会把仓库 clone 到本地的 skills/自定义指令目录并启用。
+- **Claude Code**：同样可以直接发送上面这句话，Claude Code 会自行 clone 到 `~/.claude/skills/` 下；如果你更想自己掌控路径，也可用下面的手动方式。
+
+安装后**重启一次会话**，让技能被加载。
+
+### 方式二：手动 clone
+
+把本仓库 clone 到对应助手的 skills 目录即可。仓库根目录就是技能目录，clone 完直接可用。
+
+**Claude Code：**
 
 ```bash
 # 全局可用（所有项目都能用，推荐）
@@ -32,7 +51,14 @@ git clone git@github.com:slb-cn/cyberquant-skill.git ~/.claude/skills/cyberquant
 git clone git@github.com:slb-cn/cyberquant-skill.git .claude/skills/cyberquant-skill
 ```
 
-安装后**重启一次 Claude Code 会话**，让技能被加载。
+**Codex：**
+
+```bash
+# clone 到 Codex 的自定义指令/skills 目录（路径以本机 Codex 配置为准）
+git clone git@github.com:slb-cn/cyberquant-skill.git ~/.codex/skills/cyberquant-skill
+```
+
+安装后**重启一次会话**，让技能被加载。
 
 ## 首次使用
 
