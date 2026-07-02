@@ -20,7 +20,7 @@
 
 ## 安装
 
-支持两种方式：**让 AI 助手直接装**（推荐，最省事）或 **手动 clone**。
+支持三种方式：**让 AI 助手直接装**（推荐，最省事）、**手动 clone**或 **用 `skills` CLI 装**。
 
 ### 方式一：让 AI 助手直接安装（推荐）
 
@@ -59,6 +59,18 @@ git clone git@github.com:slb-cn/cyberquant-skill.git ~/.codex/skills/cyberquant-
 ```
 
 安装后**重启一次会话**，让技能被加载。
+
+### 方式三：用 `skills` CLI 安装
+
+用官方 [`skills`](https://www.npmjs.com/package/skills) CLI 一行命令拉取并放置到正确目录，适合不想自己 clone、又想用命令行控制的场景：
+
+```bash
+npx skills add https://github.com/slb-cn/cyberquant-skill --skill cyberquant-skill
+```
+
+- 该命令会把仓库中的 `cyberquant-skill` 技能下载并安装到本地 skills 目录。
+- `--skill` 指定要安装的技能名（与仓库名一致）。
+- 安装后**重启一次会话**，让技能被加载。
 
 ## 首次使用
 
