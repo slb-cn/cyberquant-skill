@@ -1,6 +1,6 @@
 ---
 name: cyberquant-skill
-description: 「赛博空间2077」CyberQuant 数据共享 API 服务平台的统一助手。涉及查询/分析股票、指数、行情、K线、财务等数据、或把数据导出/下载/保存成文件时使用。本技能是数据能力的统一入口，**优先经本技能编排，由它决定调哪个 cyberquant-mcp 工具或 cyberquant-cli，不要直接调用 cyberquant-mcp 的工具**。分工：对话内看/分析小数据走 MCP(list_routes→get_route_detail→query_data)；导出大数据到文件走 cyberquant-cli stream(固定)。首次自动安装并配置好 MCP 与 CLI。
+description: 「赛博空间2077」CyberQuant 数据共享 API 服务平台的统一助手。涉及查询/分析股票、指数、行情、K线、财务等数据、把数据导出/下载/保存成文件、或需要生成 Node/Python 接口请求示例代码（把接口集成进自己程序做定时更新）时使用。本技能是数据能力的统一入口，**优先经本技能编排，由它决定调哪个 cyberquant-mcp 工具或 cyberquant-cli，不要直接调用 cyberquant-mcp 的工具**。分工：对话内看/分析小数据走 MCP(list_routes→get_route_detail→query_data)；导出大数据到文件走 cyberquant-cli stream(固定)；生成集成用示例代码走路径 D（Node 封装 cyberquant-cli、Python 用 cyberquant 包）。首次自动安装并配置好 MCP 与 CLI。
 ---
 
 # CyberQuant 数据助手
@@ -64,13 +64,14 @@ description: 「赛博空间2077」CyberQuant 数据共享 API 服务平台的�
 
 ### 第 2 步：告知能力（配置完成后，或用户问「你能做什么」时）
 
-向用户说明本技能五项能力：
+向用户说明本技能六项能力：
 
 - **数据路由查询** —— `list_routes` 看有哪些数据；`get_route_detail(routeSlug)` 看某条路由的入参/返回字段与传值格式。
 - **字段定位**（不知道某指标/字段从哪个接口取时，如「资产负债率怎么查」「OE 在哪」）—— 通过 MCP `get_routes_metadata` 拿到路由元数据做语义匹配，返回 `routeSlug` + 字段名 + 说明（详见路径 C）。
 - **数据分析**（对话内，适合小数据即时查看）—— `query_data(routeSlug, params)` 直接返回 CSV。
 - **数据导出**（存成文件，适合大数据/留档）—— `cyberquant-cli stream ... --output <文件>` 流式导出。
 - **账户与权限查询**（想知道自己能查哪些市场、订阅等级、到期时间、限流配额时）—— `get_user_profile` 返回账户/订阅等级/可用市场/到期时间/速率限制。
+- **接口请求示例代码**（想把某接口集成进自己程序、定时更新数据时）—— 复用路由发现拿到 `routeSlug` + 参数，生成可直接运行的 Node / Python 示例（默认分页查询；数据量较大、想要更高效的批量/全量拉取时再给 SSE 流式段），语言不明确时先问用户。模板见 `references/example-node.md` / `references/example-python.md`（详见路径 D）。
 
 ### 第 3 步：识别意图并路由（基于下面的 `$ARGUMENTS`）
 
@@ -79,6 +80,7 @@ description: 「赛博空间2077」CyberQuant 数据共享 API 服务平台的�
 - **想定位某字段/指标从哪个接口取，或了解有哪些数据 / 某字段怎么传** → 走【路径 C：字段定位】（基于路由元数据语义匹配；想浏览全量路由再 `list_routes`）。
 - **想在对话里看/分析数据** → 走【路径 A：分析】。
 - **想导出 / 下载 / 保存成文件** → 走【路径 B：导出】。
+- **想把数据接入自己的程序 / 写脚本定时更新** → 走【路径 D：接口请求示例代码】。
 - **意图模糊** → 先 `list_routes` 帮用户定位，再确认是分析还是导出。
 
 ---
@@ -152,6 +154,31 @@ description: 「赛博空间2077」CyberQuant 数据共享 API 服务平台的�
 
 ---
 
+#### 路径 D：接口请求示例代码（程序集成 / 定期更新）
+
+**触发场景**：用户说"给我一段代码 / 写个脚本 / 写个函数调这个接口""定时 / 每天 / 定期更新 XX 数据""集成到我 Node / Python 程序里"等——要把某接口固化成代码做定期更新。
+
+**流程**：
+1. **复用路由发现**：用 `list_routes` / `get_route_detail(routeSlug)` 确认 `routeSlug` 与业务参数（同路径 A / B）；拿不准参数先问用户。
+2. **确定语言**：用户明确要 Node 或 Python 则照办；**未明确则反问"你要 Node 还是 Python 版本？"，不要臆测**。
+3. **只读对应语言的模板**（Node 读 `references/example-node.md`、Python 读 `references/example-python.md`），把占位符换成该用户具体的 `routeSlug` + 参数，输出**可直接粘贴运行**的代码。**首版只给最简调用**（见下方约束）：默认一次单页查询（Node 封装 `cyberquant-cli query`、Python 用 `client.query`），再用一行注释写明「拉全量：Node 加 `--all`、Python 改用 `client.query_all`」即可；用户明确要更高效的批量/全量拉取时，再加一段 SSE 流式（`stream` / `connect_sse`）。
+4. **附带说明**：
+   - 安装 / 配置：Node 复用本技能已自动安装的 `cyberquant-cli`（无需额外依赖）；Python 需 `pip install cyberquant`（包主页 <https://pypi.org/project/cyberquant/>）。
+   - 配置依赖：代码读共用的 `~/.cyberquant/config.json`（本技能已配好 `apiKey`）；纯命令行环境首次可 `cyberquant-cli config set`（Node）或 `cyberquant config set`（Python）。
+   - 定时调度：系统 cron（推荐），或 Node 的 `node-cron`、Python 的 `APScheduler` / `schedule`。
+
+**约束（必守）**：
+- 只复用元数据 / 路由发现里**真实存在**的 `routeSlug` 与参数，不臆造接口或字段。
+- 保持 Node 与 Python 两版对齐同一个接口（同样的 `routeSlug` + 参数）。
+- Node 版**一律封装已装的 `cyberquant-cli`**（`child_process` 调 `query` / `stream`），**不要自己写 fetch / 拼 HTTP**。
+- **首版示例尽量简单**：只给「一次调用 + 打印结果」，**不要**自作主张加数据累积 / 合并 / 去重 / 增量回补 / 全量回填 / 本地缓存等业务逻辑（CSV merge、lookback、backfill 之类一律不加）；用户需要这些能力时会基于示例追问，再在追问里逐步演进。
+- **日期参数**：默认拉「最近 7 天」（`[today-7, today]` 闭区间），并在该参数旁注释「按需手动调整区间」，不要默认拉上市至今等大区间。
+- **分页默认只查第一页**：首版用单页查询（Node `query`、Python `client.query`），并用一行注释写明「拉全量：Node 加 `--all`、Python 改用 `client.query_all`」即可——不要默认就拉全量、也不要自己实现翻页循环。
+- 定时全量更新按需把上面注释里的 `--all` / `query_all` 打开即可。SSE `stream`（Python `connect_sse`）是**长连接一次流式拉取、比分页更高效**的拉取方式——数据量较大、想要更高效地批量/全量拉取时再用它。
+- ⚠️ **本平台数据均为盘后、按日更新，没有实时数据**：不要以「实时行情」为由使用 `stream`，也不要把它塞进短间隔调度反复起（数据每日才更新一次、长连接起停也有开销），按日调度即可。
+
+---
+
 ## 关键约束（始终遵守）
 
 1. `pageSize` 上限 1000；MCP 数据按 **CSV** 返回；**不自动翻页**（`hasMore` 引导缩小范围）。
@@ -160,6 +187,7 @@ description: 「赛博空间2077」CyberQuant 数据共享 API 服务平台的�
 4. 所有回复（数据/错误/警告）都附带清晰的下一步提示。
 5. 第 1 步的安装 / 注册 / 配置必须**幂等**：已就绪就跳过，绝不重复安装或覆盖用户已有配置。
 6. 调用 `configure` 前先向用户确认 apiKey，不要臆造。
+7. **示例代码**（路径 D）：只引用真实存在的 `routeSlug` / 参数；语言不明确先问用户、不臆测；Node 版封装已装的 `cyberquant-cli`、不重写 HTTP 层；生成的代码本身不依赖 MCP；**首版尽量简单**——只给「一次调用 + 打印」，不加累积 / 合并 / 增量 / 回补等业务逻辑（需要演进时由用户追问），日期默认拉最近 7 天并注释可手动调整，分页默认只查第一页并一行注释如何拉全量（`--all` / `query_all`）。
 
 ## 用户输入
 
@@ -167,6 +195,6 @@ $ARGUMENTS
 
 ---
 
-> **跨助手兼容**：本技能以 Claude Code 为主路径。在 Codex / Cursor / OpenClaw 等其它助手上同样可用——MCP tools（`configure` / `list_routes` / `get_route_detail` / `query_data` / `get_user_profile` / `get_routes_metadata`）与 cyberquant-cli 各助手通用；仅「自动注册 MCP」「后台执行」两步会因助手不同而 fallback（见第 1 步、路径 B）。CLI stream 不可控，分析数据一律走 MCP，不要用 CLI 拉了再分析。
+> **跨助手兼容**：本技能以 Claude Code 为主路径。在 Codex / Cursor / OpenClaw 等其它助手上同样可用——MCP tools（`configure` / `list_routes` / `get_route_detail` / `query_data` / `get_user_profile` / `get_routes_metadata`）与 cyberquant-cli 各助手通用；仅「自动注册 MCP」「后台执行」两步会因助手不同而 fallback（见第 1 步、路径 B）。CLI stream 不可控，分析数据一律走 MCP，不要用 CLI 拉了再分析。生成的示例代码（路径 D）本身不依赖 MCP（Node 走已装 CLI、Python 走 `cyberquant` 包），任何语言运行时可用；路由发现仍优先 MCP（无 MCP 时用 CLI 或直接给通用模板）。
 
 现在开始：先执行**第 1 步环境就绪检查**（CLI / MCP 注册 / apiKey / MCP 可用性与鉴权），全部就绪或补齐后，按 `$ARGUMENTS` 的意图走第 3 步路由。若第 1 步发现需要重启会话，立即提示用户重启并停止后续动作。

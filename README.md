@@ -1,16 +1,19 @@
 # cyberquant-skill
 
-> 一个 AI 助手技能（Skill），作为 **「赛博空间2077」CyberQuant 数据共享 API 服务平台的统一助手**：自动安装并配置 [cyberquant-mcp](https://www.npmjs.com/package/cyberquant-mcp) 与 [cyberquant-cli](https://www.npmjs.com/package/cyberquant-cli)，之后根据你的自然语言意图自动路由——**查询/分析数据走 MCP，导出数据到文件走 CLI（stream 方式）**。
+> 一个 AI 助手技能（Skill），作为 **「赛博空间2077」CyberQuant 数据共享 API 服务平台的统一助手**：自动安装并配置 [cyberquant-mcp](https://www.npmjs.com/package/cyberquant-mcp) 与 [cyberquant-cli](https://www.npmjs.com/package/cyberquant-cli)，之后根据你的自然语言意图自动路由——**查询/分析数据走 MCP，导出数据到文件走 CLI（stream 方式），需要把接口集成进自己程序做定时更新时生成 Node/Python 示例代码**。
 
 ## 它能做什么
 
-装上这个技能后，在 Claude Code 对话里直接用自然语言提需求即可，技能会自动完成「安装 → 配置 → 路由」全流程，提供三项能力：
+装上这个技能后，在 Claude Code 对话里直接用自然语言提需求即可，技能会自动完成「安装 → 配置 → 路由」全流程，提供六项能力：
 
 | 能力 | 说明 | 走哪个工具 |
 |---|---|---|
 | **数据路由查询** | 看有哪些数据、某条路由支持哪些参数 | MCP `list_routes` / `get_route_detail` |
+| **字段定位** | 不知道某指标/字段从哪个接口取时做定位 | MCP `get_routes_metadata` |
 | **数据分析** | 对话内即时查看/分析（小数据，返回 CSV） | MCP `query_data` |
 | **数据导出** | 把数据流式导出成文件（大数据/留档） | CLI `cyberquant-cli stream` |
+| **账户与权限查询** | 查自己能查哪些市场、订阅等级、到期时间、限流配额 | MCP `get_user_profile` |
+| **接口请求示例代码** | 生成代码集成进自己程序做定时更新 | 复用 MCP 路由发现，输出 Node（封装 `cyberquant-cli`）+ Python（`cyberquant` 包）代码，模板见 `references/` |
 
 ## 前置要求
 
@@ -79,7 +82,7 @@ npx skills add https://github.com/slb-cn/cyberquant-skill --skill cyberquant-ski
 1. 检查并安装 `cyberquant-cli`（缺失时 `npm install -g`）；
 2. 检查并注册 `cyberquant-mcp`（缺失时 `claude mcp add cyberquant-mcp -s user -- npx -y cyberquant-mcp`，**首次注册需重启会话生效**）；
 3. 检查 `~/.cyberquant/config.json` 是否已配 apiKey，没有就向你索取并写入；
-4. 告知你三项能力，然后按你的意图路由。
+4. 告知你六项能力，然后按你的意图路由。
 
 > 全新机器上首次注册 MCP 后，技能会提示你重启一次会话——这是 Claude Code 加载新 MCP 工具的固有机制，重启后即可正常使用。
 
@@ -89,10 +92,12 @@ npx skills add https://github.com/slb-cn/cyberquant-skill --skill cyberquant-ski
 /cyberquant-skill 帮我看看都有哪些数据路由
 /cyberquant-skill 分析一下平安银行（000001.SZ）最近一周的日K线数据
 /cyberquant-skill 把平安银行最近一个月的日K线导出成 csv 文件
+/cyberquant-skill 给我一段 Python 代码，定时更新平安银行(000001.SZ)的日K线
 ```
 
 - **分析**类需求 → 技能依次调用 `list_routes → get_route_detail → query_data`，在对话里给出 CSV 结果。
 - **导出**类需求 → 技能先用 MCP 定位路由与参数，再执行 `cyberquant-cli stream <route> --format csv --output <文件>`，完成后告诉你文件路径和行数。
+- **示例代码**类需求 → 技能先复用 MCP 路由发现定位 `routeSlug` 与参数，再按你选的语言（Node 封装 `cyberquant-cli` / Python 用 `cyberquant` 包）生成可直接运行的代码，方便你集成进程序做定时更新。
 
 ## 配置文件
 
